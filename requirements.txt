@@ -1,1 +1,8 @@
 flask
+flask_cors 
+pulp 
+pymongo 
+sklearn.ensemble 
+numpy 
+import 
+joblib

@@ -6,44 +6,54 @@
     <title>Cricket Team Generator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-        }
-        p {
-            text-align: center;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            margin-bottom: 10px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.table-container {
+    text-align: center;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    border: 2px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+
+
     </style>
 </head>
 <body>
@@ -74,13 +84,32 @@
         let result = document.getElementById('result');
         result.innerHTML = '<h2>Selected Squad</h2>';
         if (data.selected_squad.length > 0) {
-            let ul = document.createElement('ul');
-            data.selected_squad.forEach(player => {
-                let li = document.createElement('li');
-                li.textContent = `Player: ${player[0]}, Player Type: ${player[1]}, Nationality: ${player[2]}, Predicted Price: ${player[3]}`;
-                ul.appendChild(li);
+            let tableContainer = document.createElement('div');
+            tableContainer.classList.add('table-container');
+            let table = document.createElement('table');
+            table.innerHTML = `
+                <tr>
+                    <th>Serial Number</th>
+                    <th>Player</th>
+                    <th>Player Type</th>
+                    <th>Nationality</th>
+                    <th>Predicted Price (Crores)</th>
+                </tr>
+            `;
+            data.selected_squad.forEach((player, index) => {
+                let serialNumber = index + 1;
+                table.innerHTML += `
+                    <tr>
+                        <td>${serialNumber}</td>
+                        <td>${player[0]}</td>
+                        <td>${player[1]}</td>
+                        <td>${player[2]}</td>
+                        <td>${player[3]}</td>
+                    </tr>
+                `;
             });
-            result.appendChild(ul);
+            tableContainer.appendChild(table);
+            result.appendChild(tableContainer);
             result.innerHTML += `<p>Total Predicted Price: ${data.total_predicted_price.toFixed(2)} Crores</p>`;
             result.innerHTML += `<p>Remaining Budget: ${data.remaining_budget.toFixed(2)} Crores</p>`;
         } else {
@@ -89,9 +118,6 @@
     })
     .catch(error => console.error('Error:', error));
 });
-
-
-
     </script>
 </body>
 </html>

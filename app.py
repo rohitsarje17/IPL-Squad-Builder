@@ -50,7 +50,6 @@ def add_player():
     Player_Type = Player_Type_mapping.get(data["Player_Type"], -1)
     Nationality = Nationality_mapping.get(data["Nationality"], -1)
     
-
     features = np.array([
         Player_Type, Nationality, data["runs"], data["boundaries"], data["balls_faced"],
         data["wickets"], data["balls_bowled"], data["runs_conceded"], data["matches"],
@@ -58,10 +57,10 @@ def add_player():
         data["bowling_economy"], data["bowling_avg"], data["bowling_strike_rate"],
         data["catches"], data["stumpings"]
     ]).reshape(1, -1)
+    
     predicted_price = price_model.predict(features)[0]
     predicted_performance = performance_model.predict(features)[0]
 
-   
     new_player = {
         "player":data["player"],
         "Player_Type": Player_Type,
