@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Players</title>
+</head>
+<body>
+    <h1>All Players</h1>
+    <ul id="playersList"></ul>
+
+    <script>
+        fetch('/get_all_players')
+        .then(response => response.json())
+        .then(data => {
+            let playersList = document.getElementById('playersList');
+            data.forEach(player => {
+                let listItem = document.createElement('li');
+                listItem.textContent = `Player: ${player.player}, Type: ${player.Player_Type}, Nationality: ${player.Nationality}, Predicted Price: ${player.predicted_price}, Predicted Performance: ${player.predicted_performance}`;
+                playersList.appendChild(listItem);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>

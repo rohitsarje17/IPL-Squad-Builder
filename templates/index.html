@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Team Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        p {
+            text-align: center;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cricket Team Generator</h1>
+        <p>Click the button below to generate a cricket team.</p>
+        <button id="generateBtn" class="btn">Generate Team</button>
+        <button id="addPlayerBtn" class="btn">Add Player</button>
+        <button id="showPlayersBtn" class="btn">Show All Players</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+
+        document.getElementById("showPlayersBtn").addEventListener("click", function() {
+            window.location.href = "/players";  
+        });
+
+
+        document.getElementById("addPlayerBtn").addEventListener("click", function() {
+            window.location.href = "add_player.html";
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            fetch('/generate_team')
+            .then(response => response.json())
+            .then(data => {
+                let result = document.getElementById('result');
+                result.innerHTML = '<h2>Selected Squad</h2>';
+                if (data.selected_squad.length > 0) {
+                    let ul = document.createElement('ul');
+                    data.selected_squad.forEach(player => {
+                        let li = document.createElement('li');
+                        li.textContent = `Player: ${player.Player}, Player Type: ${player['Player Type']}, Nationality: ${player.Nationality}, Predicted Price: ${player['Predicted Price (Crores)']}`;
+                        ul.appendChild(li);
+                    });
+                    result.appendChild(ul);
+                    result.innerHTML += `<p>Total Predicted Price: ${data.total_predicted_price.toFixed(2)} Crores</p>`;
+                    result.innerHTML += `<p>Remaining Budget: ${data.remaining_budget.toFixed(2)} Crores</p>`;
+                } else {
+                    result.innerHTML = '<p>No players selected.</p>';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

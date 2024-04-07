@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add Player</h1>
+        <form id="addPlayerForm">
+            <label for="player">Player Name</label>
+            <input type="text" id="player" name="player" required>
+
+            <label for="Player_Type">Player Type</label>
+            <input type="text" id="Player_Type" name="Player_Type" required>
+            
+            <label for="Nationality">Nationality</label>
+            <input type="text" id="Nationality" name="Nationality" required>
+
+            <label for="runs">Runs</label>
+            <input type="number" id="runs" name="runs" required>
+            
+            <label for="boundaries">Boundaries</label>
+            <input type="number" id="boundaries" name="boundaries" required>
+
+            <label for="balls_faced">Balls Faced</label>
+            <input type="number" id="balls_faced" name="balls_faced" required>
+
+            <label for="wickets">Wickets</label>
+            <input type="number" id="wickets" name="wickets" required>
+
+            <label for="balls_bowled">Balls Bowled</label>
+            <input type="number" id="balls_bowled" name="balls_bowled" required>
+
+            <label for="runs_conceded">Runs Conceded</label>
+            <input type="number" id="runs_conceded" name="runs_conceded" required>
+
+            <label for="matches">Matches</label>
+            <input type="number" id="matches" name="matches" required>
+
+            <label for="batting_avg">Batting Average</label>
+            <input type="number" id="batting_avg" name="batting_avg" required>
+
+            <label for="batting_strike_rate">Batting Strike Rate</label>
+            <input type="number" id="batting_strike_rate" name="batting_strike_rate" required>
+
+            <label for="boundaries_percent">Boundaries Percent</label>
+            <input type="number" id="boundaries_percent" name="boundaries_percent" required>
+
+            <label for="bowling_economy">Bowling Economy</label>
+            <input type="number" id="bowling_economy"" name="bowling_economy"" required>
+
+            <label for="bowling_avg">Bowling Average</label>
+            <input type="number" id="bowling_avg" name="bowling_avg" required>
+
+            <label for="bowling_strike_rate">Bowling Strike Rate</label>
+            <input type="number" id="bowling_strike_rate" name="bowling_strike_rate" required>
+
+            <label for="catches">Catches</label>
+            <input type="number" id="catches" name="catches" required>
+
+            <label for="stumpings">Stumpings</label>
+            <input type="number" id="stumpings" name="stumpings" required>
+
+            <input type="submit" value="Add Player">
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('addPlayerForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const formData = new FormData(this); 
+            const jsonData = {}; 
+
+            formData.forEach((value, key) => {
+                jsonData[key] = value;
+            });
+
+            fetch('/add_player', {
+             method: 'POST',
+                body: JSON.stringify(jsonData), 
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Player added successfully');
+                    location.reload();  
+                } else {
+                    throw new Error('Failed to add player');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error);
+            });
+        });
+
+    </script>
+</body>
+</html>
