@@ -1,10 +1,11 @@
 from flask import Flask,render_template,request
 from flask_cors import CORS
 from flask import request, jsonify
-from pulp import LpProblem, LpVariable, LpMaximize, LpBinary
+from pulp import LpProblem, LpVariable, LpMaximize, LpBinary, LpSolverDefault
 from pymongo import MongoClient
 from sklearn.ensemble import RandomForestRegressor
 import numpy as np
+import pandas as pd
 from joblib import load
 
 app = Flask(__name__)
@@ -90,60 +91,82 @@ def add_player():
 
 @app.route("/generate_team", methods=["GET"])
 def generate_team():
-  
+    player_data = list(players_collection.find({}, {'_id': 0}))
+
+    df = pd.DataFrame(player_data)
+
+    selected_squad, total_predicted_price, remaining_budget = select_team(df)
+
+    print("Selected Squad:")
+    for player_info in selected_squad:
+        print(player_info)
+
+    response_data = {
+        "selected_squad": selected_squad,
+        "total_predicted_price": total_predicted_price,
+        "remaining_budget": remaining_budget
+    }
+
+    return jsonify(response_data)
+
+def select_team(df):
+    
     prob = LpProblem("Squad_Selection", LpMaximize)
 
+ 
+    players = df['player'].tolist() 
+    selected = LpVariable.dicts("Selected", players, 0, 1, LpBinary)  
+
   
-    players = players_collection.find()  
-    selected = {player["player"]: LpVariable(player["player"], 0, 1, LpBinary) for player in players}
+    prob += sum(df.loc[df['player'] == player, 'predicted_performance'].iloc[0] * selected[player] for player in players)
+
+    prob += sum(selected[player] for player in players) >= 18  
+    prob += sum(selected[player] for player in players) <= 25  
 
    
-    prob += sum(player["predicted_performance"] * selected[player["player"]] for player in players)
+    prob += sum(selected[player] for player in players if df.loc[df['player'] == player, 'Player_Type'].iloc[0] == 0) >= 6 
+    prob += sum(selected[player] for player in players if df.loc[df['player'] == player, 'Player_Type'].iloc[0] == 1) >= 4  
+    prob += sum(selected[player] for player in players if df.loc[df['player'] == player, 'Player_Type'].iloc[0] == 2) >= 3  
+    prob += sum(selected[player] for player in players if df.loc[df['player'] == player, 'Player_Type'].iloc[0] == 3) >= 3  
+    prob += sum(selected[player] for player in players if df.loc[df['player'] == player, 'Player_Type'].iloc[0] == 4) >= 4  
 
  
-    prob += sum(selected[player["player"]] for player in players) >= 18  # Minimum squad size
-    prob += sum(selected[player["player"]] for player in players) <= 25  # Maximum squad size
+    prob += sum(selected[player] for player in players if df.loc[df['player'] == player, 'Nationality'].iloc[0] == 1) <= 8
 
-  
-    prob += sum(selected[player["player"]] for player in players if player["Player_Type"] == 0) >= 6  # Batsman
-    prob += sum(selected[player["player"]] for player in players if player["Player_Type"] == 1) >= 4  # Spinner
-    prob += sum(selected[player["player"]] for player in players if player["Player_Type"] == 2) >= 3  # Pacer
-    prob += sum(selected[player["player"]] for player in players if player["Player_Type"] == 3) >= 3  # WicketKeeper
-    prob += sum(selected[player["player"]] for player in players if player["Player_Type"] == 4) >= 4  # Allrounder
-
-
-    prob += sum(selected[player["player"]] for player in players if player["Nationality"] == 1) <= 8
-
-  
+ 
     budget = 100 
-    prob += sum(player["predicted_price"] * selected[player["player"]] for player in players) <= budget
+    prob += sum(df.loc[df['player'] == player, 'predicted_price'].iloc[0] * selected[player] for player in players) <= budget
 
-   
+  
     prob.solve()
 
-    selected_players = [player for player in players if selected[player["player"]].varValue == 1]
-
-
-    db.selected_squads.insert_many(selected_players)
-
-    total_predicted_price = sum(player["predicted_price"] for player in selected_players)
+    selected_players = [player for player in players if selected[player].varValue == 1]
+    total_predicted_price = sum(df.loc[df['player'] == player, 'predicted_price'].iloc[0] for player in selected_players)
     remaining_budget = budget - total_predicted_price
 
-  
-    selected_squad_response = [
-        {
-            "Player": player["player"],
-            "Player Type": "Batsman" if player["Player_Type"] == 0 else "Spinner" if player["Player_Type"] == 1 else "Pacer" if player["Player_Type"] == 2 else "Wicketkeeper" if player["Player_Type"] == 3 else "Allrounder",
-            "Nationality": "Overseas" if player["Nationality"] == 1 else "Indian",
-            "Predicted Price (Crores)": f"{player['predicted_price']:.2f} Crores"
-        } for player in selected_players
-    ]
+    selected_squad_data = []
+    for player in selected_players:
+        player_type = df.loc[df['player'] == player, 'Player_Type'].iloc[0]
+        if player_type == 0:
+            player_type_str = 'Batsman'
+        elif player_type == 1:
+            player_type_str = 'Spinner'
+        elif player_type == 2:
+            player_type_str = 'Pacer'
+        elif player_type == 3:
+            player_type_str = 'Wicket keeper'
+        elif player_type == 4:
+            player_type_str = 'Allrounder'
+        player_price = df.loc[df['player'] == player, 'predicted_price'].iloc[0]
+        player_nationality = 'Overseas' if df.loc[df['player'] == player, 'Nationality'].iloc[0] == 1 else 'Indian'
+        selected_squad_data.append([player, player_type_str, player_nationality, f"{player_price:.2f} Crores"])
 
 
-    selected_squad_response_sorted = sorted(selected_squad_response, key=lambda x: (x["Player Type"], x["Player"]))
+    headers = ["Player", "Player Type", "Nationality", "Predicted Price (Crores)"]
 
-    return jsonify({"selected_squad": selected_squad_response_sorted, "total_predicted_price": total_predicted_price, "remaining_budget": remaining_budget})
+    selected_squad_data_sorted = sorted(selected_squad_data, key=lambda x: (x[1] != 'Batsman', x[1] != 'Allrounder', x[1] != 'Wicket keeper', x[1] != 'Spinner', x[1] != 'Pacer', x[0]))
 
+    return selected_squad_data_sorted, total_predicted_price, remaining_budget
 
 if __name__ == "__main__":
     app.run(debug=True,port=5500)

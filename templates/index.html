@@ -68,27 +68,30 @@
         });
 
         document.getElementById('generateBtn').addEventListener('click', function() {
-            fetch('/generate_team')
-            .then(response => response.json())
-            .then(data => {
-                let result = document.getElementById('result');
-                result.innerHTML = '<h2>Selected Squad</h2>';
-                if (data.selected_squad.length > 0) {
-                    let ul = document.createElement('ul');
-                    data.selected_squad.forEach(player => {
-                        let li = document.createElement('li');
-                        li.textContent = `Player: ${player.Player}, Player Type: ${player['Player Type']}, Nationality: ${player.Nationality}, Predicted Price: ${player['Predicted Price (Crores)']}`;
-                        ul.appendChild(li);
-                    });
-                    result.appendChild(ul);
-                    result.innerHTML += `<p>Total Predicted Price: ${data.total_predicted_price.toFixed(2)} Crores</p>`;
-                    result.innerHTML += `<p>Remaining Budget: ${data.remaining_budget.toFixed(2)} Crores</p>`;
-                } else {
-                    result.innerHTML = '<p>No players selected.</p>';
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
+    fetch('/generate_team')
+    .then(response => response.json())
+    .then(data => {
+        let result = document.getElementById('result');
+        result.innerHTML = '<h2>Selected Squad</h2>';
+        if (data.selected_squad.length > 0) {
+            let ul = document.createElement('ul');
+            data.selected_squad.forEach(player => {
+                let li = document.createElement('li');
+                li.textContent = `Player: ${player[0]}, Player Type: ${player[1]}, Nationality: ${player[2]}, Predicted Price: ${player[3]}`;
+                ul.appendChild(li);
+            });
+            result.appendChild(ul);
+            result.innerHTML += `<p>Total Predicted Price: ${data.total_predicted_price.toFixed(2)} Crores</p>`;
+            result.innerHTML += `<p>Remaining Budget: ${data.remaining_budget.toFixed(2)} Crores</p>`;
+        } else {
+            result.innerHTML = '<p>No players selected.</p>';
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+
     </script>
 </body>
 </html>
