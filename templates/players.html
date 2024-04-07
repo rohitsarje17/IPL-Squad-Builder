@@ -1,13 +1,31 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Players</title>
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .card p {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
     <h1>All Players</h1>
-    <ul id="playersList"></ul>
+    <div id="playersList"></div>
 
     <script>
         fetch('/get_all_players')
@@ -15,9 +33,30 @@
         .then(data => {
             let playersList = document.getElementById('playersList');
             data.forEach(player => {
-                let listItem = document.createElement('li');
-                listItem.textContent = `Player: ${player.player}, Type: ${player.Player_Type}, Nationality: ${player.Nationality}, Predicted Price: ${player.predicted_price}, Predicted Performance: ${player.predicted_performance}`;
-                playersList.appendChild(listItem);
+                let card = document.createElement('div');
+                card.classList.add('card');
+
+                let playerName = document.createElement('h2');
+                playerName.textContent = player.player;
+                card.appendChild(playerName);
+
+                let playerType = document.createElement('p');
+                playerType.textContent = `Player_Type: ${player.Player_Type}`;
+                card.appendChild(playerType);
+
+                let playerNationality = document.createElement('p');
+                playerNationality.textContent = `Nationality: ${player.Nationality}`;
+                card.appendChild(playerNationality);
+
+                let predictedPrice = document.createElement('p');
+                predictedPrice.textContent = `Predicted Price: ${player.predicted_price}`;
+                card.appendChild(predictedPrice);
+
+                let predictedPerformance = document.createElement('p');
+                predictedPerformance.textContent = `Predicted Performance: ${player.predicted_performance}`;
+                card.appendChild(predictedPerformance);
+
+                playersList.appendChild(card);
             });
         })
         .catch(error => console.error('Error:', error));
