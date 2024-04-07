@@ -1,65 +1,165 @@
-!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Players</title>
-    <style>
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>All Players</title>
+        <style>
+            .card-container {
+                display: flex; /* Set container to flex layout */
+                flex-wrap: wrap; /* Allow cards to wrap onto multiple lines */
+                justify-content: center;
+                align-items: center;
+            }
+
+            .card {
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 10px;
+                margin-right: 10px;
+                margin-bottom: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                background-color: #f9f9f9;
+                flex: 0 0 calc(25% - 20px);
+            }
+
+            .card h2 {
+                margin-top: 0;
+            }
+
+            .card p {
+                margin-bottom: 5px;
+            }
+
+            #sortContainer {
+            display: flex;
+            justify-content: flex-end; 
             margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            background-color: #f9f9f9;
-        }
+            }
+            #sortSelect {
+            margin-left: 10px; 
+            }
+        </style>
+    </head>
+    <body>
+        <center>
+            <div >
+                <h1>All Players</h1>
+            </div>
+        </center>
+        <div>
+            <label for="sortSelect">Sort by:</label>
+            <select id="sortSelect">
+                <option value="player">Player Name</option>
+                <option value="Player_Type">Player Type</option>
+                <option value="Nationality">Nationality</option>
+                <option value="predicted_price_asc">Predicted Price (Low to High)</option>
+                <option value="predicted_price_desc">Predicted Price (High to Low)</option>
+                <option value="predicted_performance_asc">Predicted Performance (Low to High)</option>
+                <option value="predicted_performance_desc">Predicted Performance (High to Low)</option>
+            </select>
+        </div>
+        <div id="playersList" class="card-container"></div>
 
-        .card h2 {
-            margin-top: 0;
-        }
+        <script>
+            const Player_Type_mapping = {"Batsman": 0, "Spinner": 1, "Pacer": 2, "Wicketkeeper": 3, "Allrounder": 4};
+            const Nationality_mapping = {"Indian": 0, "Overseas": 1};
 
-        .card p {
-            margin-bottom: 5px;
-        }
-    </style>
-</head>
-<body>
-    <h1>All Players</h1>
-    <div id="playersList"></div>
+            document.addEventListener("DOMContentLoaded", function() {
+                const playersList = document.getElementById('playersList');
+                const sortSelect = document.getElementById('sortSelect');
 
-    <script>
-        fetch('/get_all_players')
-        .then(response => response.json())
-        .then(data => {
-            let playersList = document.getElementById('playersList');
-            data.forEach(player => {
-                let card = document.createElement('div');
-                card.classList.add('card');
+                // Function to fetch player data and create cards
+                function fetchAndDisplayPlayers() {
+                    fetch('/get_all_players')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Sort the data based on the selected sorting option
+                        const sortedData = sortData(data, sortSelect.value);
+                        // Clear previous cards
+                        playersList.innerHTML = '';
+                        // Create cards for each player
+                        sortedData.forEach(player => {
+        let card = document.createElement('div');
+        card.classList.add('card');
 
-                let playerName = document.createElement('h2');
-                playerName.textContent = player.player;
-                card.appendChild(playerName);
+        let playerName = document.createElement('h2');
+        playerName.textContent = player.player;
+        card.appendChild(playerName);
 
-                let playerType = document.createElement('p');
-                playerType.textContent = `Player_Type: ${player.Player_Type}`;
-                card.appendChild(playerType);
+        // Mapping Player Type
+        let playerType = document.createElement('p');
+        playerType.textContent = `Player_Type: ${getPlayerType(player.Player_Type)}`;
+        card.appendChild(playerType);
 
-                let playerNationality = document.createElement('p');
-                playerNationality.textContent = `Nationality: ${player.Nationality}`;
-                card.appendChild(playerNationality);
+        // Mapping Nationality
+        let playerNationality = document.createElement('p');
+        playerNationality.textContent = `Nationality: ${getNationality(player.Nationality)}`;
+        card.appendChild(playerNationality);
 
-                let predictedPrice = document.createElement('p');
-                predictedPrice.textContent = `Predicted Price: ${player.predicted_price}`;
-                card.appendChild(predictedPrice);
+        // Round off predicted price to 2 decimals and add "cr" after it
+        let predictedPrice = document.createElement('p');
+        predictedPrice.textContent = `Predicted Price: ${formatPrice(player.predicted_price)}`;
+        card.appendChild(predictedPrice);
 
-                let predictedPerformance = document.createElement('p');
-                predictedPerformance.textContent = `Predicted Performance: ${player.predicted_performance}`;
-                card.appendChild(predictedPerformance);
+        let predictedPerformance = document.createElement('p');
+        predictedPerformance.textContent = `Predicted Performance: ${player.predicted_performance}`;
+        card.appendChild(predictedPerformance);
 
-                playersList.appendChild(card);
+        playersList.appendChild(card);
+    });
+
+    // Function to format predicted price
+    function formatPrice(price) {
+        return (Math.round(price * 100) / 100).toFixed(2) + " cr";
+    }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+
+                // Function to sort player data based on selected attribute
+                function sortData(data, sortBy) {
+                    if (sortBy.includes('_asc')) {
+                        sortBy = sortBy.replace('_asc', '');
+                        return data.sort((a, b) => a[sortBy] - b[sortBy]);
+                    } else if (sortBy.includes('_desc')) {
+                        sortBy = sortBy.replace('_desc', '');
+                        return data.sort((a, b) => b[sortBy] - a[sortBy]);
+                    } else {
+                        return data.sort((a, b) => {
+                            if (a[sortBy] < b[sortBy]) return -1;
+                            if (a[sortBy] > b[sortBy]) return 1;
+                            return 0;
+                        });
+                    }
+                }
+
+                // Function to map Player Type
+                function getPlayerType(type) {
+                    for (const [key, value] of Object.entries(Player_Type_mapping)) {
+                        if (value === type) {
+                            return key;
+                        }
+                    }
+                    return "Unknown";
+                }
+
+                // Function to map Nationality
+                function getNationality(type) {
+                    for (const [key, value] of Object.entries(Nationality_mapping)) {
+                        if (value === type) {
+                            return key;
+                        }
+                    }
+                    return "Unknown";
+                }
+
+                // Event listener for dropdown change
+                sortSelect.addEventListener('change', fetchAndDisplayPlayers);
+
+                // Fetch and display players initially
+                fetchAndDisplayPlayers();
             });
-        })
-        .catch(error => console.error('Error:', error));
-    </script>
-</body>
-</html>
+        </script>
+    </body>
+    </html>
