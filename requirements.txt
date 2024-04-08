@@ -5,3 +5,4 @@ pymongo
 numpy 
 pandas
 joblib
+scikit-learn
