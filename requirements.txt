@@ -1,8 +1,8 @@
-flask
-flask_cors 
-pulp 
-pymongo 
-numpy 
-pandas
-joblib
-scikit-learn
+flask==3.0.2
+flask_cors==4.0.0 
+pulp==2.8.0 
+pymongo==4.6.3 
+numpy==1.25.2 
+pandas==2.0.1
+joblib==1.3.2
+scikit-learn==1.2.1
