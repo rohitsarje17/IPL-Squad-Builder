@@ -167,5 +167,5 @@ def select_team(df):
 
     return selected_squad_data_sorted, total_predicted_price, remaining_budget
 
-if __name__ == "__main__":
-    app.run(debug=True,port=5500)
+# if __name__ == "__main__":
+#     app.run(debug=True,port=5500)
