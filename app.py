@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestRegressor
 import numpy as np
 import pandas as pd
 from joblib import load
+from waitress import serve
 
 app = Flask(__name__)
 CORS(app)
@@ -169,3 +170,5 @@ def select_team(df):
 
 # if __name__ == "__main__":
 #     app.run(debug=True,port=5500)
+
+serve(app, host='0.0.0.0', port=5500)
